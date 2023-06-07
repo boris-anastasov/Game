@@ -1,2 +1,1 @@
-# Ako e 2D [top down(horror)]
-# Ili da e 3D (OpenGL)
+# игра 2D top down стил направена с pyxel, в която спасяваш гора от демони, които искат да я изгорят
