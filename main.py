@@ -142,13 +142,15 @@ class Player:
 class App:
     def __init__(self):
         pyxel.init(160, 120)
-        pyxel.load("assets/player.pyxres")
+        pyxel.load("player.pyxres")
         self.background = Background(160, 120, 8)
         self.player = Player(5, 10)
         self.game_state = "start"
         self.bullets = []
         self.enemies = []
         self.sight = Sight()
+        self.score = 0
+        self.player_lives = 3
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -175,6 +177,18 @@ class App:
                     if enemy.x < bullet.x < enemy.x + enemy.w and enemy.y < bullet.y < enemy.y + enemy.h:
                         enemy.active = False
                         bullet.active = False
+                        self.score += 1
+
+                if (
+                    self.player.x + self.player.w > enemy.x
+                    and self.player.x < enemy.x + enemy.w
+                    and self.player.y + self.player.h > enemy.y
+                    and self.player.y < enemy.y + enemy.h
+                ):
+                    self.player_lives -= 1
+                    enemy.active = False
+                    if self.player_lives <= 0:
+                        self.game_state = "end"
 
             self.enemies = [enemy for enemy in self.enemies if enemy.active]
 
@@ -182,6 +196,15 @@ class App:
                 enemy_x = random.randint(0, pyxel.width - 8)
                 enemy_y = random.randint(0, pyxel.height - 8)
                 self.enemies.append(Enemy(enemy_x, enemy_y))
+
+            if self.score >= 6:
+                self.game_state = "end"
+
+        elif self.game_state == "end":
+            if pyxel.btnp(pyxel.KEY_SPACE):
+                self.score = 0
+                self.player_lives = 3
+                self.game_state = "start"
 
     def draw(self):
         if self.game_state == "start":
@@ -200,7 +223,13 @@ class App:
 
             self.sight.draw()
 
-            pyxel.text(2, 2, f"Bullets: {self.player.magazine}", 7)
+            pyxel.text(5, 5, f"Bullets: {self.player.magazine}", 7)
+            pyxel.text(5, 15, f"Score: {self.score}", 7)
+            pyxel.text(5, 25, f"Lives: {self.player_lives}", 7)
+
+        elif self.game_state == "end":
+            pyxel.cls(0)
+            pyxel.text(40, 50, "The forest got occupied!", 7)
 
 
 App()
