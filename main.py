@@ -17,12 +17,23 @@ class Background:
                 pyxel.blt(x * self.tile_size, y * self.tile_size, 0, tile_id[0], tile_id[1], self.tile_size, self.tile_size, 0)
 
 
+class Sight:
+    def __init__(self):
+        self.size = 1
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pyxel.circ(pyxel.mouse_x, pyxel.mouse_y, self.size, 0)
+
+
 class Bullet:
     def __init__(self, x, y, angle):
         self.x = x
         self.y = y
         self.angle = angle
-        self.speed = 2
+        self.speed = 4
         self.active = True
 
     def update(self):
@@ -43,12 +54,44 @@ class Enemy:
         self.w = 8
         self.h = 8
         self.active = True
+        self.speed = 0.5
+        self.direction = "down"
 
-    def update(self):
-        pass
+    def update(self, player):
+        dx = player.x - self.x
+        dy = player.y - self.y
+
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        if distance > 0:
+            direction_x = dx / distance
+            direction_y = dy / distance
+        else:
+            direction_x = 0
+            direction_y = 0
+
+        self.x += direction_x * self.speed
+        self.y += direction_y * self.speed
+
+        if abs(dx) > abs(dy):
+            if dx > 0:
+                self.direction = "right"
+            else:
+                self.direction = "left"
+        else:
+            if dy > 0:
+                self.direction = "down"
+            else:
+                self.direction = "up"
 
     def draw(self):
-        pyxel.blt(self.x, self.y, 0, 0, 16, self.w, self.h)
+        if self.direction == "up":
+            pyxel.blt(self.x, self.y, 0, 8, 24, self.w, self.h)
+        elif self.direction == "down":
+            pyxel.blt(self.x, self.y, 0, 0, 16, self.w, self.h)
+        elif self.direction == "left":
+            pyxel.blt(self.x, self.y, 0, 8, 16, self.w, self.h)
+        elif self.direction == "right":
+            pyxel.blt(self.x, self.y, 0, 0, 24, self.w, self.h)
 
 
 class Player:
@@ -74,8 +117,8 @@ class Player:
             self.direction = "left"
         elif pyxel.btn(pyxel.KEY_D):
             self.x += self.speed
+            self.direction = "right"
 
-        # Reload the magazine if it's empty (R key pressed)
         if self.magazine == 0 and pyxel.btnp(pyxel.KEY_R):
             self.magazine = 6
 
@@ -94,17 +137,6 @@ class Player:
             angle = math.atan2(pyxel.mouse_y - self.y, pyxel.mouse_x - self.x)
             self.magazine -= 1
             return Bullet(self.x, self.y, angle)
-
-
-class Sight:
-    def __init__(self):
-        self.size = 1
-
-    def update(self):
-        pass
-
-    def draw(self):
-        pyxel.circ(pyxel.mouse_x, pyxel.mouse_y, self.size, 1)
 
 
 class App:
@@ -137,7 +169,7 @@ class App:
                     self.bullets.remove(bullet)
 
             for enemy in self.enemies:
-                enemy.update()
+                enemy.update(self.player)
 
                 for bullet in self.bullets:
                     if enemy.x < bullet.x < enemy.x + enemy.w and enemy.y < bullet.y < enemy.y + enemy.h:
@@ -146,7 +178,6 @@ class App:
 
             self.enemies = [enemy for enemy in self.enemies if enemy.active]
 
-            # Spawn enemies at regular intervals
             if pyxel.frame_count % 60 == 0:
                 enemy_x = random.randint(0, pyxel.width - 8)
                 enemy_y = random.randint(0, pyxel.height - 8)
@@ -169,8 +200,7 @@ class App:
 
             self.sight.draw()
 
-            # Display the number of bullets left in the magazine
-            pyxel.text(5, 5, f"Bullets: {self.player.magazine}", 7)
+            pyxel.text(2, 2, f"Bullets: {self.player.magazine}", 7)
 
 
 App()
