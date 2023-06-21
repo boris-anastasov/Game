@@ -8,7 +8,7 @@ class Background:
         self.width = width
         self.height = height
         self.tile_size = tile_size
-        self.tiles = [[random.choice([(16, 0), (16, 8), (24, 8)]) for _ in range(width // tile_size)] for _ in range(height // tile_size)]
+        self.tiles = [[random.choice([(16, 0), (24, 0), (24, 8)]) for _ in range(width // tile_size)] for _ in range(height // tile_size)]
 
     def draw(self):
         for y in range(len(self.tiles)):
@@ -119,7 +119,7 @@ class Player:
             self.x += self.speed
             self.direction = "right"
 
-        if self.magazine == 0 and pyxel.btnp(pyxel.KEY_R):
+        if self.magazine >= 0 and pyxel.btnp(pyxel.KEY_R):
             self.magazine = 6
 
     def draw(self):
@@ -188,19 +188,21 @@ class App:
                     self.player_lives -= 1
                     enemy.active = False
                     if self.player_lives <= 0:
-                        self.game_state = "end"
+                        self.game_state = "end1"
 
             self.enemies = [enemy for enemy in self.enemies if enemy.active]
 
-            if pyxel.frame_count % 60 == 0:
+            if pyxel.frame_count % 30 == 0:
                 enemy_x = random.randint(0, pyxel.width - 8)
                 enemy_y = random.randint(0, pyxel.height - 8)
-                self.enemies.append(Enemy(enemy_x, enemy_y))
+                enemy_distance = math.sqrt((self.player.x - enemy_x) ** 2 + (self.player.y - enemy_y) ** 2)
+                if enemy_distance > 25:
+                    self.enemies.append(Enemy(enemy_x, enemy_y))
 
-            if self.score >= 6:
-                self.game_state = "end"
+            if self.score >= 10:
+                self.game_state = "end2"
 
-        elif self.game_state == "end":
+        elif self.game_state == "end1":
             if pyxel.btnp(pyxel.KEY_SPACE):
                 self.score = 0
                 self.player_lives = 3
@@ -227,9 +229,13 @@ class App:
             pyxel.text(5, 15, f"Score: {self.score}", 7)
             pyxel.text(5, 25, f"Lives: {self.player_lives}", 7)
 
-        elif self.game_state == "end":
+        elif self.game_state == "end1":
             pyxel.cls(0)
-            pyxel.text(40, 50, "The forest got occupied!", 7)
+            pyxel.text(55, 50, "You are dead!", 8)
+
+        elif self.game_state == "end2":
+            pyxel.cls(0)
+            pyxel.text(44, 50, "You saved the forest?", 7)
 
 
 App()
