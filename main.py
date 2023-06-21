@@ -37,8 +37,8 @@ class Bullet:
         self.active = True
 
     def update(self):
-        self.x += math.cos(self.angle) * self.speed
-        self.y += math.sin(self.angle) * self.speed
+        self.x += math.cos(self.angle) * self.speed #Актуализира x позицията на куршума чрез добавяне на хоризонталния компонент на движението на куршума, изчислен чрез косинуса на ъгъла и умножен по скоростта.
+        self.y += math.sin(self.angle) * self.speed #Актуализира x позицията на куршума чрез добавяне на вертикален компонент на движението на куршума, изчислен чрез синуса на ъгъла и умножен по скоростта.
 
         if self.x < 0 or self.x > pyxel.width or self.y < 0 or self.y > pyxel.height:
             self.active = False
